@@ -26,11 +26,12 @@ dfs = pd.read_excel("tuberculosis.xlsx", sheet_name="tuberculosis")
 #         time.sleep(2)
 
 opencagedata_url = 'https://api.opencagedata.com/geocode/v1/json'
+opencagedata_params = {'no_annotations': '1', 'language': 'am', 'key': '641c51bed8ab490184632ad8526e29ad'}
 def opencagedata_provinces():
     column = 'Մարզ'
     column_frame = pd.DataFrame (dfs, columns=[column])
 
-    params = {'no_annotations': '1', 'language': 'am', 'key': '641c51bed8ab490184632ad8526e29ad'}
+
 
     provinces = {}
     for index, province in column_frame.iterrows():
@@ -40,8 +41,8 @@ def opencagedata_provinces():
             else:
                 query = province[column]
 
-            params['q'] = query
-            response = requests.get (opencagedata_url, params=params).json ()
+            opencagedata_params['q'] = query
+            response = requests.get (opencagedata_url, params=opencagedata_params).json ()
 
             for result in response['results']:
                 if result['components']['_type'] == 'state' or 'Երևան' == province[column]:
@@ -59,8 +60,6 @@ def opencagedata_address():
     address_column_name = 'Հասցե'
     column_frame = pd.DataFrame (dfs, columns=[province_column_name, address_column_name])
 
-    params = {'no_annotations': '1', 'language': 'am', 'key': '641c51bed8ab490184632ad8526e29ad'}
-
     addresses = {}
     for index, row in column_frame.iterrows():
         if 'Երևան' != row[province_column_name]:
@@ -69,8 +68,8 @@ def opencagedata_address():
             query = row[province_column_name]
         query += ' ' + row[address_column_name]
 
-        params['q'] = query
-        response = requests.get (opencagedata_url, params=params).json()
+        opencagedata_params['q'] = query
+        response = requests.get (opencagedata_url, params=opencagedata_params).json()
 
         for result in response['results']:
             print (query)
