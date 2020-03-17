@@ -61,24 +61,29 @@ def opencagedata_address():
 
     params = {'no_annotations': '1', 'language': 'am', 'key': '641c51bed8ab490184632ad8526e29ad'}
 
-    addesses = {}
+    addresses = {}
     for index, row in column_frame.iterrows():
-        query = row[province_column_name] + ' ' + row[address_column_name]
+        if 'Երևան' != row[province_column_name]:
+            query = row[province_column_name] + 'ի ' + province_column_name
+        else:
+            query = row[province_column_name]
+        query += ' ' + row[address_column_name]
 
         params['q'] = query
-        response = requests.get (opencagedata_url, params=params).json ()
+        response = requests.get (opencagedata_url, params=params).json()
 
         for result in response['results']:
             print (query)
             print (result['geometry'])
-            addesses[index] = str(result['geometry']['lat']) + "," + str(result['geometry']['lng'])
+            addresses[index] = str(result['geometry']['lat']) + "," + str(result['geometry']['lng'])
             break
 
         time.sleep (0.01)
-    return addesses
+    return addresses
 
 
 # provinces = opencagedata_provinces()
 # print(provinces)
-addesses = opencagedata_address()
-print(addesses)
+addresses = opencagedata_address()
+for index in addresses:
+    print (addresses[index])
