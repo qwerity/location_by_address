@@ -86,7 +86,6 @@ def opencagedata_address():
         time.sleep (0.01)
     return addresses
 
-
 def opencagedata_province_city():
     teghakayum_column_name = 'Տեղակայում'
     address_column_name = 'Հասցե'
@@ -100,25 +99,38 @@ def opencagedata_province_city():
         else:
             query = row[address_column_name].split()[0] + ', ' + row[teghakayum_column_name]
 
+        query = query.replace('ՄԵԾ ՊԱՌՆԻ', 'ՄԵԾ ՊԱՐՆԻ')
+        query = query.replace('ԼՈՌԻ', 'ԼՈՐԻ')
+        query = query.replace('ԱՐԳԱՎԱՆԴ, ԱՐԱՐԱՏ', 'Argavand, Ararat')
+
         if query not in tmp:
             opencagedata_params['q'] = query
             response = requests.get (opencagedata_url, params=opencagedata_params).json()
 
             if response['total_results'] > 0:
                 for result in response['results']:
-                    # print (index, query)
-                    # print (result['geometry'])
-                    addresses[index] = str(result['geometry']['lat']) + "," + str(result['geometry']['lng'])
+                    addresses[index] = [query, str(result['geometry']['lat']) + "," + str (result['geometry']['lng'])]
                     tmp[query] = addresses[index]
                     break
             else:
-                addresses[index] = "not_found"
+                query += 'ի մարզ'
+                opencagedata_params['q'] = query
+                response = requests.get (opencagedata_url, params=opencagedata_params).json ()
+
+                if response['total_results'] > 0:
+                    for result in response['results']:
+                        addresses[index] = [query, str(result['geometry']['lat']) + "," + str (result['geometry']['lng'])]
+                        tmp[query] = addresses[index]
+                        break
+                else:
+                    addresses[index] = "not_found"
         else:
             addresses[index] = tmp[query]
 
         print (index, addresses[index])
 
         time.sleep (0.01)
+
     return addresses
 
 
@@ -127,9 +139,10 @@ def opencagedata_province_city():
 # addresses = opencagedata_address()
 # for index in addresses:
 #     print (addresses[index])
+
 province_city = opencagedata_province_city()
-file = open("province_city.txt", "w")
+file = open("data/opencagedata_province_city.txt", "w")
 for index in province_city:
-    file.write(province_city[index] + "\n")
+    file.write(str(index) + ';' + province_city[index][0] + ';' + province_city[index][1] + "\n")
 file.flush()
 file.close()
